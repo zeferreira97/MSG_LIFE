@@ -1,5 +1,6 @@
 package com.vehicles.vehicles.controller;
 
+import com.vehicles.vehicles.Exceptions.ResourceNotFoundException;
 import com.vehicles.vehicles.Service.VehicleServiceInterface;
 import com.vehicles.vehicles.model.Vehicle;
 import com.vehicles.vehicles.model.VehicleCreateRequest;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,12 @@ public class VehicleController {
     @GetMapping("/vehicle")
     public ResponseEntity<List<Vehicle>> getAllVehicles() {
         return vehicleServiceInterface.getAllVehicles();
+    }
+
+
+    @PatchMapping("/vehicle/{license}")
+    public ResponseEntity<Vehicle> updateVehicle(@PathVariable(value = "license") String license, @RequestParam BigDecimal riskFactor) throws ResourceNotFoundException {
+        return vehicleServiceInterface.updateVehicle(license, riskFactor);
     }
 
 /*

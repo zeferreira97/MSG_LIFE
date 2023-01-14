@@ -1,13 +1,14 @@
 package com.vehicles.vehicles.Service;
 
+import com.vehicles.vehicles.Exceptions.ResourceNotFoundException;
 import com.vehicles.vehicles.model.Vehicle;
-import com.vehicles.vehicles.model.VehicleCreateRequest;
 import com.vehicles.vehicles.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +60,17 @@ public class VehicleService implements VehicleServiceInterface{
         }
     }
 
+    @Override
+    public ResponseEntity<Vehicle> updateVehicle(String license, BigDecimal riskFactor)
+            throws ResourceNotFoundException {
+
+        Vehicle vehicle1 = vehicleRepository.findById(license).orElseThrow(() -> new ResourceNotFoundException("Vehicle not found for this license : " + license));
+
+        vehicle1.setRiskFactor(riskFactor);
+        vehicleRepository.save(vehicle1);
+
+        return ResponseEntity.ok().body(vehicle1);
+    }
 
 /*
     @Override
