@@ -67,6 +67,37 @@ public class VehicleServiceTest{
         assertEquals(vehicleFinal,output);
     }
 
+    @Test
+    public void createVehicleNotOk() throws Exception{
+
+
+        VehicleCreateRequest vehicleCreateRequest = new VehicleCreateRequest("UU 32 KW", "FR", 0.07);
+        Vehicle vehicleFinal = new Vehicle("UU 32 KW", "FR", 0.07,null,null,null);
+
+        Vehicle vehicle1 = new Vehicle("UU 32 KW", "FR", 0.07, 4, "Diesel", 234);
+
+        List<Vehicle> vehicleList = new ArrayList<>();
+        vehicleList.add(vehicle1);
+
+        when(vehicleClient.consultVehicles()).thenReturn(vehicleList);
+
+        List<Vehicle> vehiclesInService = vehicleClient.consultVehicles();
+
+
+        when(vehicleRepository.findByPower(vehiclesInService.get(0).getPower())).thenReturn(null);
+
+        vehicleRepository.findByPower(vehiclesInService.get(0).getPower());
+
+        Vehicle vehicleTest = new Vehicle("UU 32 KW", "FR", 0.07,3,"Diesel",255);
+
+
+        when(vehicleServiceInterface.createVehicle(vehicleCreateRequest)).thenReturn(vehicleTest);
+
+        Vehicle output = vehicleServiceInterface.createVehicle(vehicleCreateRequest);
+
+        assertNotEquals(vehicleFinal,output);
+    }
+
 
     @Test
     public void updateVehicleOk() throws ResourceNotFoundException {
