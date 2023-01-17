@@ -7,11 +7,8 @@ import com.vehicles.vehicles.model.VehicleCreateRequest;
 import com.vehicles.vehicles.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -25,28 +22,24 @@ public class VehicleController {
     @Autowired
     private VehicleRepository vehicleRepository;
 
-    @PostMapping(value="/vehicle")
-    @ResponseStatus(code = HttpStatus.OK)
-    public ResponseEntity<Vehicle> createVehicle(@RequestBody Vehicle vehicle) {
-        return vehicleServiceInterface.createVehicle(vehicle);
-    }
 
 
     @GetMapping("/vehicle")
-    public ResponseEntity<List<Vehicle>> getAllVehicles() {
+    public List<Vehicle> getAllVehicles() throws ResourceNotFoundException{
         return vehicleServiceInterface.getAllVehicles();
     }
 
 
-    @PatchMapping("/vehicle/{license}")
-    public ResponseEntity<Vehicle> updateVehicle(@PathVariable(value = "license") String license, @RequestParam BigDecimal riskFactor) throws ResourceNotFoundException {
-        return vehicleServiceInterface.updateVehicle(license, riskFactor);
+    @PatchMapping("/vehicle/riskFactor")
+    public Vehicle updateVehicleRiskFactor(@RequestBody VehicleCreateRequest vehicle) throws ResourceNotFoundException {
+        return vehicleServiceInterface.updateVehicleRiskFactor(vehicle);
     }
 
-/*
+
     @PostMapping(value="/vehicle")
     @ResponseStatus(code = HttpStatus.OK)
-    public ResponseEntity<Vehicle> createVehicleFirstStep(@RequestBody VehicleCreateRequest vehicle) {
-        return vehicleServiceInterface.createVehicleFirstStep(vehicle);
-    }*/
+    public Vehicle createVehicle(@RequestBody VehicleCreateRequest vehicle) throws Exception{
+        return vehicleServiceInterface.createVehicle(vehicle);
+    }
+
 }

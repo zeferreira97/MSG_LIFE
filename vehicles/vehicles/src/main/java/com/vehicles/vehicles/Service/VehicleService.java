@@ -1,17 +1,16 @@
 package com.vehicles.vehicles.Service;
 
 import com.vehicles.vehicles.Exceptions.ResourceNotFoundException;
+import com.vehicles.vehicles.client.VehicleClient;
 import com.vehicles.vehicles.model.Vehicle;
+import com.vehicles.vehicles.model.VehicleCreateRequest;
 import com.vehicles.vehicles.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import static java.util.Objects.isNull;
 
 
 @Service
@@ -20,65 +19,81 @@ public class VehicleService implements VehicleServiceInterface{
     @Autowired
     private VehicleRepository vehicleRepository;
 
+    @Autowired
+    private VehicleClient vehicleClient;
+
     @Override
-    public ResponseEntity<List<Vehicle>> getAllVehicles() {
+    public List<Vehicle> getAllVehicles() throws ResourceNotFoundException {
 
         try {
-            List<Vehicle> vehicles = new ArrayList<Vehicle>();
+            List<Vehicle> vehicles = new ArrayList<>();
 
             vehicleRepository.findAll().forEach(vehicles::add);
 
             if (vehicles.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return vehicles;
             }
 
-            for(Integer i = 0; i <vehicles.size(); i++) {
-                Locale test = new Locale("English", vehicles.get(i).getCountryOfLicense());
-                vehicles.get(i).setCountryOfLicense(vehicles.get(i).getCountryOfLicense() + " -> " + test.getDisplayCountry());
+            for (Vehicle vehicle : vehicles) {
+                Locale test = new Locale("English", vehicle.getCountryOfLicense());
+                vehicle.setCountryOfLicense(vehicle.getCountryOfLicense() + " -> " + test.getDisplayCountry());
             }
 
-            return new ResponseEntity<>(vehicles, HttpStatus.OK);
+            return vehicles;
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResourceNotFoundException("No vehicles were found!");
         }
     }
 
 
-
     @Override
-    public ResponseEntity<Vehicle> createVehicle(Vehicle vehicle){
-
-        try {
-            Vehicle vehicle1 = vehicleRepository
-                    .save(new Vehicle(vehicle.getLicense(), vehicle.getCountryOfLicense(), vehicle.getRiskFactor(), vehicle.getNumberDoors(), vehicle.getFuelType(),vehicle.getPower()));
-
-
-
-            return new ResponseEntity<>(vehicle1, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Override
-    public ResponseEntity<Vehicle> updateVehicle(String license, BigDecimal riskFactor)
+    public Vehicle updateVehicleRiskFactor(VehicleCreateRequest vehicle)
             throws ResourceNotFoundException {
 
-        Vehicle vehicle1 = vehicleRepository.findById(license).orElseThrow(() -> new ResourceNotFoundException("Vehicle not found for this license : " + license));
+        Vehicle vehicle1;
 
-        vehicle1.setRiskFactor(riskFactor);
-        vehicleRepository.save(vehicle1);
+        try {
+            vehicle1 = vehicleRepository.findByLicenseAndCountryOfLicense(vehicle.getLicense(), vehicle.getCountryOfLicense());
+            vehicle1.setRiskFactor(vehicle.getRiskFactor());
+            vehicleRepository.save(vehicle1);
+        }catch (Exception e){
+            throw new ResourceNotFoundException("Vehicle not found for this license : " + vehicle.getLicense() + " and country : " + vehicle.getCountryOfLicense());
+        }
 
-        return ResponseEntity.ok().body(vehicle1);
+        return vehicle1;
     }
 
-/*
+
     @Override
-    public ResponseEntity<Vehicle> createVehicleFirstStep(VehicleCreateRequest vehicle){
+    public Vehicle createVehicle(VehicleCreateRequest vehicle) throws Exception{
 
-        Vehicle vehicle1 = new Vehicle(vehicle.getLicense(), vehicle.getCountryOfLicense(), vehicle.getRiskFactor());
+        List<Vehicle> vehicleList = vehicleClient.consultVehicles();
 
+        Vehicle finalVehicle= new Vehicle(vehicle.getLicense(),vehicle.getCountryOfLicense(),vehicle.getRiskFactor(),null,null,null);
 
+        try {
+            for (Vehicle value : vehicleList) {
+                if (value.getLicense().equals(vehicle.getLicense()) && (value.getCountryOfLicense().equals(vehicle.getCountryOfLicense()))) {
+
+                    if (isNull(vehicleRepository.findByLicenseAndCountryOfLicense(vehicle.getLicense(),vehicle.getCountryOfLicense()))) {
+
+                        finalVehicle.setNumberDoors(value.getNumberDoors());
+                        finalVehicle.setFuelType(value.getFuelType());
+                        finalVehicle.setPower(value.getPower());
+
+                        vehicleRepository.save(finalVehicle);
+                        return finalVehicle;
+                    }
+                }
+            }
+            if(isNull(finalVehicle.getPower())){
+                throw new ResourceNotFoundException("Vehicle can't be created because if already exists on the Database or can't be found on the service");
+            }
+        }catch (Exception e){
+            throw new ResourceNotFoundException("Vehicle can't be created because if already exists on the Database or can't be found on the service");
+        }
+        return finalVehicle;
     }
-*/
+
+
 }

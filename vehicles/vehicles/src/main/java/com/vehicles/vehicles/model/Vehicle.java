@@ -9,8 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +25,7 @@ public class Vehicle {
     private String countryOfLicense;
 
     @Column(name = "risk_factor", nullable = false)
-    private BigDecimal riskFactor;
+    private double riskFactor;
 
     @Column(name = "number_doors")
     private Integer numberDoors;
@@ -38,6 +36,4 @@ public class Vehicle {
     @Column(name= "power", nullable = false)
     private Integer power;
 
-    public Vehicle(String license, String countryOfLicense, Double riskFactor) {
-    }
 }
